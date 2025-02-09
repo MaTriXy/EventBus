@@ -1,7 +1,10 @@
 EventBus
 ========
-EventBus is publish/subscribe event bus optimized for Android.<br/>
+[EventBus](https://greenrobot.org/eventbus/) is a publish/subscribe event bus for Android and Java.<br/>
 <img src="EventBus-Publish-Subscribe.png" width="500" height="187"/>
+
+[![Build Status](https://github.com/greenrobot/EventBus/actions/workflows/gradle.yml/badge.svg)](https://github.com/greenrobot/EventBus/actions)
+[![Follow greenrobot on Twitter](https://img.shields.io/twitter/follow/greenrobot_de.svg?style=flat-square&logo=twitter)](https://twitter.com/greenrobot_de)
 
 EventBus...
 
@@ -11,73 +14,104 @@ EventBus...
     * avoids complex and error-prone dependencies and life cycle issues
  * makes your code simpler
  * is fast
- * is tiny (<50k jar)
- * is proven in practice by apps with 100,000,000+ installs
+ * is tiny (~60k jar)
+ * is proven in practice by apps with 1,000,000,000+ installs
  * has advanced features like delivery threads, subscriber priorities, etc.
-
- [![Build Status](https://travis-ci.org/greenrobot/EventBus.svg?branch=master)](https://travis-ci.org/greenrobot/EventBus)
 
 EventBus in 3 steps
 -------------------
-1. Define events:<br/>
-<code>public class MessageEvent { /* Additional fields if needed */ }</code><br/><br/>
-2. Prepare subscribers:<br/>
-<code>eventBus.register(this);</code><br/>
-<code>public void onEvent(AnyEventType event) {/* Do something */};</code><br/><br/>
-3. Post events:<br/>
-<code>eventBus.post(event);</code>
+1. Define events:
+
+    ```java  
+    public static class MessageEvent { /* Additional fields if needed */ }
+    ```
+
+2. Prepare subscribers:
+    Declare and annotate your subscribing method, optionally specify a [thread mode](https://greenrobot.org/eventbus/documentation/delivery-threads-threadmode/):  
+
+    ```java
+    @Subscribe(threadMode = ThreadMode.MAIN)  
+    public void onMessageEvent(MessageEvent event) {
+        // Do something
+    }
+    ```
+    Register and unregister your subscriber. For example on Android, activities and fragments should usually register according to their life cycle:
+
+   ```java
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+ 
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+    ```
+
+3. Post events:
+
+   ```java
+    EventBus.getDefault().post(new MessageEvent());
+    ```
+
+Read the full [getting started guide](https://greenrobot.org/eventbus/documentation/how-to-get-started/).
+
+There are also some [examples](https://github.com/greenrobot-team/greenrobot-examples).
+
+**Note:** we highly recommend the [EventBus annotation processor with its subscriber index](https://greenrobot.org/eventbus/documentation/subscriber-index/).
+This will avoid some reflection related problems seen in the wild.  
 
 Add EventBus to your project
 ----------------------------
-EventBus is available on Maven Central. Please ensure that you are using the latest version by [checking here](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22de.greenrobot%22%20AND%20a%3A%22eventbus%22)
+<a href="https://search.maven.org/search?q=g:org.greenrobot%20AND%20a:eventbus"><img src="https://img.shields.io/maven-central/v/org.greenrobot/eventbus.svg"></a>
 
-Gradle:
-```
-    compile 'de.greenrobot:eventbus:2.4.0'
+Available on <a href="https://search.maven.org/search?q=g:org.greenrobot%20AND%20a:eventbus">Maven Central</a>.
+
+Android projects:
+```groovy
+implementation("org.greenrobot:eventbus:3.3.1")
 ```
 
-Maven:
+Java projects:
+```groovy
+implementation("org.greenrobot:eventbus-java:3.3.1")
 ```
+```xml
 <dependency>
-    <groupId>de.greenrobot</groupId>
-    <artifactId>eventbus</artifactId>
-    <version>2.4.0</version>
+    <groupId>org.greenrobot</groupId>
+    <artifactId>eventbus-java</artifactId>
+    <version>3.3.1</version>
 </dependency>
 ```
 
-[Or download EventBus from Maven Central](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22de.greenrobot%22%20AND%20a%3A%22eventbus%22)
+R8, ProGuard
+------------
 
-How-to, Developer Documentation
--------------------------------
-Details on EventBus and its API are available in the [HOWTO document](HOWTO.md).
+If your project uses R8 or ProGuard this library ships [with embedded rules](/eventbus-android/consumer-rules.pro).
 
-Additional Features and Notes
------------------------------
+Homepage, Documentation, Links
+------------------------------
+For more details please check the [EventBus website](https://greenrobot.org/eventbus). Here are some direct links you may find useful:
 
-* **NOT based on annotations:** Querying annotations are slow on Android, especially before Android 4.0. Have a look at this [Android bug report](http://code.google.com/p/android/issues/detail?id=7811).
-* **Based on conventions:** Event handling methods are called "onEvent".
-* **Performance optimized:** It's probably the fastest event bus for Android.
-* **Convenience singleton:** You can get a process wide event bus instance by calling EventBus.getDefault(). You can still call new EventBus() to create any number of local busses.
-* **Subscriber and event inheritance:** Event handler methods may be defined in super classes, and events are posted to handlers of the event's super classes including any implemented interfaces. For example, subscriber may register to events of the type Object to receive all events posted on the event bus.
+[Features](https://greenrobot.org/eventbus/features/)
 
-FAQ
----
-**Q:** How is EventBus different to Android's BroadcastReceiver/Intent system?<br/>
-**A:** Unlike Android's BroadcastReceiver/Intent system, EventBus uses standard Java classes as events and offers a more convenient API. EventBus is intended for a lot more uses cases where you wouldn't want to go through the hassle of setting up Intents, preparing Intent extras, implementing broadcast receivers, and extracting Intent extras again. Also, EventBus comes with a much lower overhead.
+[Documentation](https://greenrobot.org/eventbus/documentation/)
 
- **Q:** How to do pull requests?<br/>
- **A:** Ensure good code quality and consistent formatting. EventBus has a good test coverage: if you propose a new feature or fix a bug, please add a unit test.
+[Changelog](https://github.com/greenrobot/EventBus/releases)
 
-Release History, License
-------------------------
-[CHANGELOG](CHANGELOG.md)
+[FAQ](https://greenrobot.org/eventbus/documentation/faq/)
+
+License
+-------
+Copyright (C) 2012-2021 Markus Junginger, greenrobot (https://greenrobot.org)
 
 EventBus binaries and source code can be used according to the [Apache License, Version 2.0](LICENSE).
 
-More Open Source by greenrobot
-==============================
-[__greenrobot-common__](https://github.com/greenrobot/greenrobot-common) is a set of utility classes and hash functions for Android & Java projects.
+Other projects by greenrobot
+============================
+[__ObjectBox__](https://objectbox.io/) ([GitHub](https://github.com/objectbox/objectbox-java)) is a new superfast object-oriented database.
 
-[__greenDAO__](https://github.com/greenrobot/greenDAO) is an ORM optimized for Android: it maps database tables to Java objects and uses code generation for optimal speed.
-
-[Follow us on Google+](https://plus.google.com/b/114381455741141514652/+GreenrobotDe/posts) to stay up to date.
+[__Essentials__](https://github.com/greenrobot/essentials) is a set of utility classes and hash functions for Android & Java projects.
